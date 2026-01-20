@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행과 우리: 나를 찾아 떠나는 수업</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <i class="fa-solid fa-paper-plane"></i>
+                <h1>여행과 우리</h1>
+                <p>온라인 학습 포털</p>
+            </div>
+            <div class="input-group">
+                <label>포털 아이디 (ID)</label>
+                <input type="text" id="login-id" placeholder="ID를 입력하세요">
+            </div>
+            <div class="input-group">
+                <label>비밀번호 (PW)</label>
+                <input type="password" id="login-pw" placeholder="비밀번호를 입력하세요">
+            </div>
+            <button class="login-btn" onclick="checkLogin()">로그인</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER (Hidden by default) -->
+    <div id="app" class="app-container hidden">
+
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>여행과 우리</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" onclick="switchTab('home')">
+                    <i class="fa-solid fa-house"></i> <span>홈 (과목소개)</span>
+                </li>
+                <li onclick="switchTab('unit1')">
+                    <i class="fa-solid fa-user-astronaut"></i> <span>Unit 1. 나</span>
+                </li>
+                <li onclick="switchTab('unit2')">
+                    <i class="fa-solid fa-handshake"></i> <span>Unit 2. 너</span>
+                </li>
+                <li onclick="switchTab('unit3')">
+                    <i class="fa-solid fa-users"></i> <span>Unit 3. 우리</span>
+                </li>
+                <li onclick="switchTab('unit4')">
+                    <i class="fa-solid fa-book-open"></i> <span>Unit 4. 기록</span>
+                </li>
+                <li id="admin-menu-btn" class="hidden" onclick="switchTab('admin')">
+                    <i class="fa-solid fa-chart-pie"></i> <span>관리자 메뉴</span>
+                </li>
+            </ul>
+            <div class="user-profile">
+                <div class="avatar" id="user-avatar">👩‍🎓</div>
+                <div class="user-info">
+                    <p class="name" id="user-name">학생 모드</p>
+                    <p class="role" id="user-role">고2 수강생</p>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content-area">
+
+            <!-- HOME SECTION (Intro) -->
+            <!-- ... (omitted for brevity, assume existing) ... -->
+
+            <!-- (Existing Sections...) -->
+
+            <!-- ADMIN SECTION -->
+            <section id="admin" class="tab-content" style="padding-bottom: 50px;">
+                <div class="unit-header color-admin">
+                    <span class="badge" style="background:#2d3436;">ADMIN</span>
+                    <h2>👨‍🏫 학생 진도 현황판</h2>
+                    <p>학생들의 학습 체크리스트 달성률을 한눈에 확인하세요.</p>
+                </div>
+
+                <div class="card" style="overflow-x: auto;">
+                    <div class="admin-controls">
+                        <button class="refresh-btn" onclick="loadAdminDashboard()"><i
+                                class="fa-solid fa-rotate-right"></i> 새로고침</button>
+                        <span class="admin-note">* 현재 브라우저에 저장된 데이터 기준입니다.</span>
+                    </div>
+                    <table class="student-table">
+                        <thead>
+                            <tr>
+                                <th>학생 ID</th>
+                                <th>진도율</th>
+                                <th>상태</th>
+                                <th>상세 보기</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-list-body">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <!-- HOME SECTION (Intro) -->
+            <section id="home" class="tab-content active">
+                <header class="hero-header">
+                    <h1>나를 찾아 떠나는 여행 🌍</h1>
+                    <p class="subtitle">지리 X 문학 X 예술 X 진로가 만난 융합 프로젝트 수업</p>
+                    <button class="cta-btn" onclick="switchTab('unit1')">여행 시작하기 🚀</button>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="card intro-card" style="grid-column: span 2;">
+                        <h3>🏫 과목 소개: [여행과 우리]</h3>
+                        <div class="intro-detail">
+                            <p><strong>"여행이라는 삶의 실천적 경험을 중심에 둔 융합형 선택 과목"</strong></p>
+                            <p>본 수업은 단순한 지리 지식을 넘어, 문학, 예술, 감정표현, 진로탐색 등 다양한 분야를 아우릅니다.</p>
+                            <ul class="detail-list">
+                                <li>✨ <strong>나의 발견:</strong> 과거 여행을 회상하거나 상상하며 감정과 기억을 정리합니다.</li>
+                                <li>🤝 <strong>타인 이해:</strong> 여행지에서 마주하는 자연과 문화, 사람들과의 관계를 통해 공감 능력을 키웁니다.</li>
+                                <li>🌱 <strong>성장과 진로:</strong> 여행책 집필과 독립서점 전시 등 <strong>표현 중심형 프로젝트</strong>를 통해 삶을
+                                    기획하는 힘을 기릅니다.</li>
+                            </ul>
+                            <p class="intro-footer">"직접적인 여행 경험이 없어도 괜찮아요! 문학, 영상, 시뮬레이션을 통해 간접적으로 여행을 체험하며 나만의 이야기를
+                                만들어갑니다."</p>
+                        </div>
+                    </div>
+
+                    <div class="card game-card">
+                        <h3>🎮 나의 여행 성향 테스트</h3>
+                        <p>나는 어떤 스타일의 여행자일까요?<br>5가지 질문으로 알아보세요!</p>
+                        <button class="game-btn" onclick="openTestModal()">테스트 시작하기 ▶</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TRAVEL TEST MODAL -->
+            <div id="test-modal" class="modal hidden">
+                <div class="modal-content test-content">
+                    <span class="close-modal" onclick="closeTestModal()">&times;</span>
+                    <div id="test-body">
+                        <h2 class="test-title">✈️ 나의 여행 스타일 찾기</h2>
+                        <div id="test-question-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="test-progress"></div>
+                            </div>
+                            <h3 id="test-q-text">질문 텍스트</h3>
+                            <div class="test-options">
+                                <button class="test-opt-btn" onclick="nextTest(0)" id="opt-a">A 옵션</button>
+                                <button class="test-opt-btn" onclick="nextTest(1)" id="opt-b">B 옵션</button>
+                            </div>
+                        </div>
+                        <div id="test-result-container" class="hidden">
+                            <div class="result-icon" id="r-icon">🦁</div>
+                            <h3 id="r-title">당신은...</h3>
+                            <p id="r-desc">설명</p>
+                            <button class="restart-btn" onclick="restartTest()">다시 하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UNIT 1 -->
+            <section id="unit1" class="tab-content">
+                <div class="unit-header color-1">
+                    <span class="badge">UNIT 01</span>
+                    <h2>여행에서 만난 '나' 🧳</h2>
+                    <p>내 삶의 여행 경험을 회상하고, 나만의 여행 계획을 세워봅니다.</p>
+                </div>
+                <div class="content-row">
+                    <div class="card info-col">
+                        <h3>📚 학습 체크리스트</h3>
+                        <ul class="checklist">
+                            <li><input type="checkbox" id="u1-c1" onchange="saveCheckState()"> <label for="u1-c1">인생 여행
+                                    그래프 그리기</label></li>
+                            <li><input type="checkbox" id="u1-c2" onchange="saveCheckState()"> <label for="u1-c2">여행의
+                                    목적과 동기 설정</label></li>
+                            <li><input type="checkbox" id="u1-c3" onchange="saveCheckState()"> <label for="u1-c3">여행
+                                    계획서(예산, 경로) 작성</label></li>
+                        </ul>
+                    </div>
+                    <div class="card tool-col">
+                        <h3>🧠 독서 & 사고 전략 (Worksheet)</h3>
+                        <div class="tool-grid">
+                            <button class="tool-btn" onclick="openWorksheet('kwl')">
+                                <i class="fa-solid fa-clipboard-question"></i> KWL 표<br><span class="tool-desc">배경지식
+                                    활성화</span>
+                            </button>
+                            <button class="tool-btn" onclick="openWorksheet('mindmap')">
+                                <i class="fa-solid fa-share-nodes"></i> 마인드맵<br><span class="tool-desc">생각 확장하기</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card media-card link-only">
+                    <h3>🎬 추천 영상 자료</h3>
+                    <a href="https://www.youtube.com/results?search_query=여행의+이유+김영하" target="_blank"
+                        class="video-link-btn">
+                        <i class="fa-brands fa-youtube"></i> '여행의 이유' 영상 보러가기
+                    </a>
+                </div>
+                <div class="interactive-area">
+                    <h3>🧩 Interactive: 여행 스타일 찾기</h3>
+                    <div class="game-box">
+                        <div class="question-box">
+                            <p>여행을 갈 때 나는?</p>
+                            <div class="options">
+                                <button onclick="u1Answer('J')">계획이 생명! 엑셀 파일 필수 📅</button>
+                                <button onclick="u1Answer('P')">발길 닿는 대로~ 즉흥이 최고 🍃</button>
+                            </div>
+                        </div>
+                        <div class="result-box hidden" id="u1-result"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UNIT 2 -->
+            <section id="unit2" class="tab-content">
+                <div class="unit-header color-2">
+                    <span class="badge">UNIT 02</span>
+                    <h2>여행에서 만난 '너' 🤝</h2>
+                    <p>낯선 문화를 탐구하고 존중하며, 세계 시민의 자세를 배웁니다.</p>
+                </div>
+                <div class="content-row">
+                    <div class="card info-col">
+                        <h3>📚 학습 체크리스트</h3>
+                        <ul class="checklist">
+                            <li><input type="checkbox" id="u2-c1" onchange="saveCheckState()"> <label for="u2-c1">나라별 풍습
+                                    & 에티켓 조사</label></li>
+                            <li><input type="checkbox" id="u2-c2" onchange="saveCheckState()"> <label for="u2-c2">현지인
+                                    인터뷰 역할극</label></li>
+                            <li><input type="checkbox" id="u2-c3" onchange="saveCheckState()"> <label for="u2-c3">타문화 시점
+                                    일기 쓰기</label></li>
+                        </ul>
+                    </div>
+                    <div class="card tool-col">
+                        <h3>🧠 독서 & 사고 전략 (Worksheet)</h3>
+                        <div class="tool-grid">
+                            <button class="tool-btn" onclick="openWorksheet('venn')">
+                                <i class="fa-solid fa-circle-half-stroke"></i> 비교/대조<br><span
+                                    class="tool-desc">공통점/차이점</span>
+                            </button>
+                            <button class="tool-btn" onclick="openWorksheet('char')">
+                                <i class="fa-solid fa-user-tag"></i> 인물 분석<br><span class="tool-desc">성격 파헤치기</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card media-card link-only">
+                    <h3>🎬 추천 영상 자료</h3>
+                    <a href="https://www.youtube.com/results?search_query=세계의+에티켓+인사법" target="_blank"
+                        class="video-link-btn">
+                        <i class="fa-brands fa-youtube"></i> 세계의 에티켓 영상 보러가기
+                    </a>
+                </div>
+                <div class="interactive-area">
+                    <h3>🧩 Interactive: 글로벌 에티켓 O/X</h3>
+                    <div class="game-box">
+                        <p class="quiz-status">문제 1/3</p>
+                        <p>태국에서는 아이의 머리를 쓰다듬어도 된다?</p>
+                        <div class="ox-btns">
+                            <button class="ox-btn" onclick="u2Answer(true)">🙆‍♂️ O</button>
+                            <button class="ox-btn" onclick="u2Answer(false)">🙅‍♀️ X</button>
+                        </div>
+                        <div class="result-box hidden" id="u2-result"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UNIT 3 -->
+            <section id="unit3" class="tab-content">
+                <div class="unit-header color-3">
+                    <span class="badge">UNIT 03</span>
+                    <h2>여행에서 만난 '우리' 👫</h2>
+                    <p>함께하는 여행 속 갈등을 해결하며 관계의 소중함을 배웁니다.</p>
+                </div>
+                <div class="content-row">
+                    <div class="card info-col">
+                        <h3>📚 학습 체크리스트</h3>
+                        <ul class="checklist">
+                            <li><input type="checkbox" id="u3-c1" onchange="saveCheckState()"> <label for="u3-c1">'망한
+                                    여행' 사례 분석</label></li>
+                            <li><input type="checkbox" id="u3-c2" onchange="saveCheckState()"> <label for="u3-c2">공동 여행
+                                    코스 설계</label></li>
+                            <li><input type="checkbox" id="u3-c3" onchange="saveCheckState()"> <label for="u3-c3">협력적
+                                    의사소통 연습</label></li>
+                        </ul>
+                    </div>
+                    <div class="card tool-col">
+                        <h3>🧠 독서 & 사고 전략 (Worksheet)</h3>
+                        <div class="tool-grid">
+                            <button class="tool-btn" onclick="openWorksheet('cause')">
+                                <i class="fa-solid fa-scale-unbalanced"></i> 원인/결과<br><span class="tool-desc">왜
+                                    일어났을까?</span>
+                            </button>
+                            <button class="tool-btn" onclick="openWorksheet('flow')">
+                                <i class="fa-solid fa-timeline"></i> 사건 흐름도<br><span class="tool-desc">사건 순서 정리</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card media-card link-only">
+                    <h3>🎬 추천 영상 자료</h3>
+                    <a href="https://www.youtube.com/results?search_query=친구랑+여행+안싸우는법" target="_blank"
+                        class="video-link-btn">
+                        <i class="fa-brands fa-youtube"></i> 친구와 여행 갈등 예방 영상
+                    </a>
+                </div>
+                <div class="interactive-area">
+                    <h3>🧩 Interactive: 갈등 해결 시뮬레이션</h3>
+                    <div class="game-box">
+                        <p><strong>상황:</strong> "맛집 대기 2시간" vs "편의점"</p>
+                        <select id="u3-select">
+                            <option value="0">선택하세요...</option>
+                            <option value="A">"너 혼자 기다려!" 하고 간다.</option>
+                            <option value="B">"1시간만 기다려보자" 타협한다.</option>
+                            <option value="C">무조건 친구를 따른다.</option>
+                        </select>
+                        <button class="check-btn" onclick="u3Check()">해결하기</button>
+                        <div class="feedback-msg" id="u3-feedback"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UNIT 4 -->
+            <section id="unit4" class="tab-content">
+                <div class="unit-header color-4">
+                    <span class="badge">UNIT 04</span>
+                    <h2>여행 이후의 '나' 📖</h2>
+                    <p>여행을 기록으로 남기고, 나의 진로와 연결하여 성장합니다.</p>
+                </div>
+                <div class="content-row">
+                    <div class="card info-col">
+                        <h3>📚 학습 체크리스트</h3>
+                        <ul class="checklist">
+                            <li><input type="checkbox" id="u4-c1" onchange="saveCheckState()"> <label
+                                    for="u4-c1">여행책(에세이) 초고 작성</label></li>
+                            <li><input type="checkbox" id="u4-c2" onchange="saveCheckState()"> <label for="u4-c2">독립서점
+                                    전시 기획안</label></li>
+                            <li><input type="checkbox" id="u4-c3" onchange="saveCheckState()"> <label for="u4-c3">회고 에세이
+                                    제출</label></li>
+                        </ul>
+                    </div>
+                    <div class="card tool-col">
+                        <h3>🧠 독서 & 사고 전략 (Worksheet)</h3>
+                        <div class="tool-grid">
+                            <button class="tool-btn" onclick="openWorksheet('tree')">
+                                <i class="fa-solid fa-sitemap"></i> 개념 구조도<br><span class="tool-desc">책 목차 구조화</span>
+                            </button>
+                            <button class="tool-btn" onclick="openWorksheet('predict')">
+                                <i class="fa-solid fa-magnifying-glass"></i> 표지 추리<br><span class="tool-desc">제목으로 내용
+                                    추리</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card media-card link-only">
+                    <h3>🎬 추천 영상 자료</h3>
+                    <a href="https://www.youtube.com/results?search_query=나만의+여행책+만들기" target="_blank"
+                        class="video-link-btn">
+                        <i class="fa-brands fa-youtube"></i> 여행책 만들기 꿀팁 영상
+                    </a>
+                </div>
+                <div class="interactive-area">
+                    <h3>🧩 Interactive: 여행책 표지 꾸미기</h3>
+                    <div class="game-box book-maker">
+                        <div class="book-preview" id="book-preview">
+                            <div class="book-title" id="preview-title">나의 여행</div>
+                            <div class="book-author" id="preview-author">지은이: 나</div>
+                        </div>
+                        <div class="controls">
+                            <input type="text" id="input-title" placeholder="책 제목" oninput="updateBook()">
+                            <input type="text" id="input-author" placeholder="지은이" oninput="updateBook()">
+                            <div class="color-picker">
+                                <span class="c-dot c1" onclick="changeColor('#ff7675')"></span>
+                                <span class="c-dot c2" onclick="changeColor('#74b9ff')"></span>
+                                <span class="c-dot c3" onclick="changeColor('#a29bfe')"></span>
+                                <span class="c-dot c4" onclick="changeColor('#55efc4')"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- CHATBOT WIDGET -->
+    <div class="chatbot-widget">
+        <button class="chat-toggle" onclick="toggleChat()"><i class="fa-solid fa-robot"></i></button>
+        <div class="chat-window hidden" id="chat-window">
+            <div class="chat-header"><span>🤖 여행 멘토 봇</span> <span class="close-chat"
+                    onclick="toggleChat()">&times;</span></div>
+            <div class="chat-body" id="chat-body">
+                <div class="msg bot-msg">궁금한 점이 있나요? 언제든 물어보세요! 😊</div>
+            </div>
+            <div class="chat-input-area"><input type="text" id="chat-input" placeholder="..."
+                    onkeypress="handleEnter(event)"><button onclick="sendMsg()"><i
+                        class="fa-solid fa-paper-plane"></i></button></div>
+        </div>
+    </div>
+
+    <!-- WORKSHEET MODAL -->
+    <div id="worksheet-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeWorksheet()">&times;</span>
+            <div id="worksheet-body">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="modal-footer">
+                <button class="save-msg-btn" onclick="alert('작성 내용이 임시 저장되었습니다!')">저장하기 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

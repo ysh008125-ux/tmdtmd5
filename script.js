@@ -1,0 +1,388 @@
+// --- LOGIN & USER STATE LOGIC ---
+let currentUser = null;
+
+function checkLogin() {
+    const id = document.getElementById('login-id').value.trim();
+    // Simplified logic: allow 'student1' to 'student30' with pw '1111'
+    const isStudent = /^student([1-9]|[12][0-9]|30)$/.test(id);
+    const pw = document.getElementById('login-pw').value;
+    const app = document.getElementById('app');
+    const loginScreen = document.getElementById('login-screen');
+    const userName = document.getElementById('user-name');
+    const userRole = document.getElementById('user-role');
+    const adminMenuBtn = document.getElementById('admin-menu-btn');
+
+    if (id === '1234' && pw === '1234') {
+        // Admin
+        currentUser = 'admin';
+        loginScreen.style.display = 'none';
+        app.classList.remove('hidden');
+        userName.innerText = '관리자님';
+        userRole.innerText = '선생님 모드';
+
+        // Show Admin Menu
+        if (adminMenuBtn) adminMenuBtn.classList.remove('hidden');
+        switchTab('admin'); // Go directly to admin page
+        loadAdminDashboard();
+
+    } else if (isStudent && pw === '1111') {
+        // Student
+        currentUser = id;
+        loginScreen.style.display = 'none';
+        app.classList.remove('hidden');
+        userName.innerText = id + ' 학생';
+        userRole.innerText = '수강생';
+
+        // Hide Admin Menu just in case
+        if (adminMenuBtn) adminMenuBtn.classList.add('hidden');
+
+        // Load Checklist State for this user
+        loadCheckState();
+        switchTab('home');
+
+    } else {
+        alert('아이디 또는 비밀번호를 확인해주세요.\n(학생: student1~30 / 1111, 관리자: 1234 / 1234)');
+    }
+}
+
+function logout() {
+    location.reload();
+}
+
+// --- CHECKLIST PERSISTENCE ---
+function saveCheckState() {
+    if (!currentUser) return;
+    const checks = document.querySelectorAll('input[type="checkbox"]');
+    const state = {};
+    checks.forEach(chk => {
+        state[chk.id] = chk.checked;
+    });
+    localStorage.setItem('checklist_' + currentUser, JSON.stringify(state));
+}
+
+function loadCheckState() {
+    if (!currentUser) return;
+    const saved = localStorage.getItem('checklist_' + currentUser);
+    if (saved) {
+        const state = JSON.parse(saved);
+        for (const [id, checked] of Object.entries(state)) {
+            const el = document.getElementById(id);
+            if (el) el.checked = checked;
+        }
+    } else {
+        // Reset checks if no data
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+    }
+}
+
+// --- ADMIN DASHBOARD LOGIC ---
+function loadAdminDashboard() {
+    if (currentUser !== 'admin') return;
+
+    const tbody = document.getElementById('student-list-body');
+    tbody.innerHTML = '';
+
+    // Check key total count based on HTML checkboxes
+    // Hardcoded total checkboxes count = 12 (3 per unit x 4 units)
+    const totalChecks = 12;
+
+    for (let i = 1; i <= 30; i++) {
+        const studentId = 'student' + i;
+        const savedData = localStorage.getItem('checklist_' + studentId);
+
+        let checkedCount = 0;
+        let pClass = 'st-low';
+        let statusText = '시작 전';
+
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            // Count true values
+            checkedCount = Object.values(data).filter(v => v === true).length;
+        }
+
+        const percent = Math.round((checkedCount / totalChecks) * 100);
+
+        if (percent >= 80) { pClass = 'st-high'; statusText = '우수'; }
+        else if (percent >= 30) { pClass = 'st-mid'; statusText = '진행 중'; }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${studentId}</strong></td>
+            <td>
+                <div class="p-bar-bg">
+                    <div class="p-bar-fill" style="width: ${percent}%;"></div>
+                    <div class="p-text">${percent}%</div>
+                </div>
+            </td>
+            <td><span class="status-badge ${pClass}">${statusText}</span></td>
+            <td><button class="view-btn" onclick="alert('${studentId} 학생은 ${checkedCount}개의 활동을 완료했습니다.')">상세</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+
+// --- WORKSHEET MODAL LOGIC ---
+const worksheets = {
+    'kwl': {
+        title: 'K-W-L 표',
+        desc: '주제에 대해 이미 아는 것(K), 알고 싶은 것(W), 배운 것(L)을 정리해봅니다.',
+        html: `
+            <div class="ws-grid-3">
+                <div class="ws-col"><h4>K (What I Know)</h4><textarea placeholder="이미 알고 있는 내용을 적어보세요."></textarea></div>
+                <div class="ws-col"><h4>W (What I Want to know)</h4><textarea placeholder="더 알고 싶은 내용을 질문으로 만들어보세요."></textarea></div>
+                <div class="ws-col"><h4>L (What I Learned)</h4><textarea placeholder="수업 후 배운 내용을 정리해보세요."></textarea></div>
+            </div>
+        `
+    },
+    'mindmap': {
+        title: '마인드맵 (Mind Map)',
+        desc: '중심 주제를 가운데 두고 가지를 뻗어 나가며 생각을 확장해봅니다.',
+        html: `
+            <div style="text-align:center; height:100%; display:flex; flex-direction:column; gap:10px;">
+                <input type="text" class="ws-list-input" placeholder="중심 주제 입력 (예: 나의 여행)" style="font-size:1.5rem; text-align:center;">
+                <div style="flex:1; border:2px dashed #ddd; border-radius:10px; padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <textarea placeholder="가지 1: 생각나는 단어들..."></textarea>
+                    <textarea placeholder="가지 2: 연관된 이미지..."></textarea>
+                    <textarea placeholder="가지 3: 구체적인 계획..."></textarea>
+                    <textarea placeholder="가지 4: 자유로운 아이디어..."></textarea>
+                </div>
+            </div>
+        `
+    },
+    'venn': {
+        title: '비교/대조 (Venn Diagram)',
+        desc: '두 대상의 공통점과 차이점을 찾아 정리해봅니다.',
+        html: `
+            <div class="ws-grid-3">
+                <div class="ws-col"><h4>A 만의 특징</h4><textarea placeholder="예: 우리나라의 인사법"></textarea></div>
+                <div class="ws-col"><h4>공통점 (교집합)</h4><textarea placeholder="두 문화의 비슷한 점"></textarea></div>
+                <div class="ws-col"><h4>B 만의 특징</h4><textarea placeholder="예: 태국의 인사법"></textarea></div>
+            </div>
+        `
+    },
+    'char': {
+        title: '인물 분석표',
+        desc: '인물의 내면과 외면을 깊이 있게 탐구해봅니다.',
+        html: `
+            <div style="display:flex; gap:10px; height:100%;">
+                <div class="ws-col" style="flex:1"><h4>외적 특징</h4><textarea placeholder="생김새, 옷차림, 행동 말투 등"></textarea></div>
+                <div class="ws-col" style="flex:1"><h4>내적 특징</h4><textarea placeholder="성격, 가치관, 고민, 꿈 등"></textarea></div>
+                <div class="ws-col" style="flex:1"><h4>내가 느낀 점</h4><textarea placeholder="이 사람을 보며 나는 어떤 생각이 들었나요?"></textarea></div>
+            </div>
+        `
+    },
+    'cause': {
+        title: '원인과 결과 (Fishbone)',
+        desc: '문제의 근본적인 원인을 찾아 해결책을 모색합니다.',
+        html: `
+            <div style="display:flex; flex-direction:column; height:100%; gap:10px;">
+                <input type="text" class="ws-list-input" placeholder="문제 상황 (Result) 입력">
+                <div class="ws-grid-3" style="flex:1;">
+                    <div class="ws-col"><h4>원인 1 (환경)</h4><textarea></textarea></div>
+                    <div class="ws-col"><h4>원인 2 (사람)</h4><textarea></textarea></div>
+                    <div class="ws-col"><h4>원인 3 (소통)</h4><textarea></textarea></div>
+                </div>
+            </div>
+        `
+    },
+    'flow': {
+        title: '사건 흐름도 (Flow Chart)',
+        desc: '시간의 흐름이나 사건의 순서대로 내용을 정리합니다.',
+        html: `
+             <div style="display:flex; flex-direction:column; gap:10px; height:100%; overflow-y:auto;">
+                <input type="text" class="ws-list-input" placeholder="1단계 (처음): ">
+                <input type="text" class="ws-list-input" placeholder="2단계 (전개): ">
+                <input type="text" class="ws-list-input" placeholder="3단계 (위기): ">
+                <input type="text" class="ws-list-input" placeholder="4단계 (절정): ">
+                <input type="text" class="ws-list-input" placeholder="5단계 (결말): ">
+            </div>
+        `
+    },
+    'tree': {
+        title: '개념 구조도 (Structure Tree)',
+        desc: '핵심 개념을 중심으로 하위 내용을 체계적으로 분류합니다.',
+        html: `
+            <div style="height:100%; display:flex; flex-direction:column; gap:10px;">
+                <input type="text" class="ws-list-input" placeholder="대주제 (책 제목)" style="text-align:center; font-weight:bold;">
+                <div style="display:flex; gap:10px; flex:1;">
+                    <div class="ws-col" style="flex:1"><h4>Chapter 1</h4><textarea></textarea></div>
+                    <div class="ws-col" style="flex:1"><h4>Chapter 2</h4><textarea></textarea></div>
+                    <div class="ws-col" style="flex:1"><h4>Chapter 3</h4><textarea></textarea></div>
+                </div>
+            </div>
+        `
+    },
+    'predict': {
+        title: '표지 및 제목 추리',
+        desc: '단서를 통해 내용을 예측하며 상상력을 발휘해봅니다.',
+        html: `
+            <div class="ws-grid-3">
+                 <div class="ws-col"><h4>단서 찾기</h4><textarea placeholder="표지의 그림, 제목의 글자체 등에서 힌트를 찾아보세요."></textarea></div>
+                 <div class="ws-col"><h4>내용 상상하기</h4><textarea placeholder="어떤 이야기가 펼쳐질까요?"></textarea></div>
+                 <div class="ws-col"><h4>질문 만들기</h4><textarea placeholder="작가에게 궁금한 점은?"></textarea></div>
+            </div>
+        `
+    }
+};
+
+function openWorksheet(type) {
+    const modal = document.getElementById('worksheet-modal');
+    const body = document.getElementById('worksheet-body');
+    const ws = worksheets[type];
+
+    if (ws) {
+        body.innerHTML = `
+            <div class="ws-title">${ws.title}</div>
+            <p class="ws-desc">${ws.desc}</p>
+            ${ws.html}
+        `;
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeWorksheet() {
+    document.getElementById('worksheet-modal').classList.add('hidden');
+}
+
+
+// --- TRAVEL TEST LOGIC ---
+const testQuestions = [
+    { q: "여행을 갈 때 계획은 어떻게 세우나요?", a: "분 단위로 엑셀에 정리한다", b: "대충 비행기랑 숙소만 잡는다" },
+    { q: "관광지에서 예쁜 기념품을 발견했다!", a: "예산에 없으니 패스...", b: "일단 사고 본다! 예쁘니까." },
+    { q: "친구가 갑자기 맛집을 바꾸자고 한다면?", a: "동선 꼬이는데... (스트레스)", b: "오 그래? 거기도 좋지!" },
+    { q: "숙소를 고를 때 가장 중요한 것은?", a: "위치, 가격, 리뷰 분석 결과", b: "사진 봤을 때 꽂히는 느낌" },
+    { q: "짐 싸기는 언제 시작하나요?", a: "일주일 전부터 리스트 작성", b: "전날 밤이나 당일 아침" }
+];
+let currentQIndex = 0;
+let score = 0;
+
+function openTestModal() {
+    document.getElementById('test-modal').classList.remove('hidden');
+    restartTest();
+}
+
+function closeTestModal() {
+    document.getElementById('test-modal').classList.add('hidden');
+}
+
+function restartTest() {
+    currentQIndex = 0;
+    score = 0;
+    document.getElementById('test-question-container').classList.remove('hidden');
+    document.getElementById('test-result-container').classList.add('hidden');
+    showQuestion();
+}
+
+function showQuestion() {
+    const qData = testQuestions[currentQIndex];
+    document.getElementById('test-q-text').innerText = `Q${currentQIndex + 1}. ${qData.q}`;
+    document.getElementById('opt-a').innerText = qData.a;
+    document.getElementById('opt-b').innerText = qData.b;
+    const percent = ((currentQIndex) / testQuestions.length) * 100;
+    document.getElementById('test-progress').style.width = percent + '%';
+}
+
+function nextTest(choice) {
+    if (choice === 0) score++;
+    currentQIndex++;
+    if (currentQIndex < testQuestions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    document.getElementById('test-question-container').classList.add('hidden');
+    const rContainer = document.getElementById('test-result-container');
+    rContainer.classList.remove('hidden');
+    document.getElementById('test-progress').style.width = '100%';
+    const rIcon = document.getElementById('r-icon');
+    const rTitle = document.getElementById('r-title');
+    const rDesc = document.getElementById('r-desc');
+    if (score >= 3) {
+        rIcon.innerText = "📐";
+        rTitle.innerText = "완벽주의 설계자 (Planner)";
+        rDesc.innerHTML = "당신은 치밀한 계획으로 실패 없는 여행을 만드는 설계자입니다!<br>예상치 못한 변수만 조심한다면 최고의 가이드가 될 수 있어요.";
+    } else {
+        rIcon.innerText = "🌬️";
+        rTitle.innerText = "자유로운 탐험가 (Improviser)";
+        rDesc.innerHTML = "당신은 발길 닿는 대로 떠나는 낭만적인 탐험가입니다!<br>우연히 마주친 풍경에서 더 큰 감동을 느끼는 타입이시네요.";
+    }
+}
+
+
+// --- CHATBOT & UI LOGIC ---
+function toggleChat() {
+    document.getElementById('chat-window').classList.toggle('hidden');
+}
+
+function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
+
+function sendMsg() {
+    const input = document.getElementById('chat-input');
+    const txt = input.value.trim();
+    if (!txt) return;
+    addMessage(txt, 'user-msg');
+    input.value = '';
+    setTimeout(() => {
+        addMessage(getBotResponse(txt), 'bot-msg');
+    }, 600);
+}
+
+function addMessage(text, cls) {
+    const body = document.getElementById('chat-body');
+    const div = document.createElement('div');
+    div.className = `msg ${cls}`;
+    div.innerText = text;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+}
+
+function getBotResponse(txt) {
+    txt = txt.toLowerCase();
+    if (txt.includes('안녕')) return "안녕하세요! 여행 멘토입니다. 무엇을 도와드릴까요?";
+    if (txt.includes('1단원')) return "1단원은 '나'를 돌아보는 시간이에요. 인생 여행 그래프를 그려보셨나요?";
+    if (txt.includes('체크리스트')) return "체크리스트는 수행평가와 직결되니 꼼꼼히 채워주세요!";
+    return "좋은 질문이네요! 씽킹 툴을 사용해서 생각을 더 깊게 정리해보는 건 어떨까요?";
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    // Tab mapping
+    const map = { 'home': 0, 'unit1': 1, 'unit2': 2, 'unit3': 3, 'unit4': 4, 'admin': 5 }; // update map for admin
+    if (map[tabId] !== undefined && document.querySelectorAll('.nav-links li')[map[tabId]]) {
+        document.querySelectorAll('.nav-links li')[map[tabId]].classList.add('active');
+    }
+
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+}
+
+function u1Answer(type) {
+    const r = document.getElementById('u1-result');
+    r.classList.remove('hidden');
+    r.innerHTML = type === 'J' ? "나노 단위 계획러! 🔍" : "자유로운 영혼! 🌬️";
+}
+function u2Answer(isO) {
+    const r = document.getElementById('u2-result');
+    r.classList.remove('hidden');
+    r.innerHTML = isO ? "땡! ❌ 태국에선 머리를 만지면 안돼요." : "정답! ⭕ 머리는 신성한 부위랍니다.";
+}
+function u3Check() {
+    const v = document.getElementById('u3-select').value;
+    const f = document.getElementById('u3-feedback');
+    if (v == 'B') f.innerHTML = "현명한 타협입니다! 👍";
+    else if (v == '0') f.innerText = "선택해주세요.";
+    else f.innerHTML = "조금 더 좋은 방법이 있을까요? 🤔";
+}
+function updateBook() {
+    document.getElementById('preview-title').innerText = document.getElementById('input-title').value || "나의 여행";
+    document.getElementById('preview-author').innerText = "지은이: " + (document.getElementById('input-author').value || "나");
+}
+function changeColor(c) {
+    document.getElementById('book-preview').style.background = c;
+}
